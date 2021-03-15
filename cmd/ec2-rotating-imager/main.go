@@ -108,7 +108,7 @@ func main() {
 		var copies int = 3
 
 		if len(tsl) <= copies {
-			klog.Warningf("There's less than two images for %s. Skipping rotation.", k)
+			klog.Warningf("There's less than %d images for %s. Skipping rotation.", copies, k)
 			continue
 		}
 
