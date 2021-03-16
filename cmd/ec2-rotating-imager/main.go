@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 	"time"
@@ -11,9 +12,18 @@ import (
 	"k8s.io/klog"
 )
 
+var copies int
+var region string
+
+func init() {
+	flag.IntVar(&copies, "copies", 3, "Amount of image copies of an ec2 instance before rotating")
+	flag.StringVar(&region, "region", "us-west-2", "AWS region")
+	flag.Parse()
+}
+
 func main() {
 	ec2svc := ec2.New(session.New(&aws.Config{
-		Region: aws.String("us-east-1"),
+		Region: aws.String(region),
 	}))
 
 	// Filter out the ec2 instances that are inteded
@@ -30,6 +40,11 @@ func main() {
 	resp, err := ec2svc.DescribeInstances(params)
 	if err != nil {
 		klog.Fatal(err)
+	}
+
+	if len(resp.Reservations) == 0 {
+		klog.Info("Could not find instances to backup (tag:Backup=true)")
+		klog.Exit("Exiting..")
 	}
 
 	// Schedule an imaging request for each of these instances
@@ -104,9 +119,6 @@ func main() {
 	// Determine images to rotate (delete)
 	rotating := make([]string, 0)
 	for k, tsl := range counts {
-		// TODO: this should a flag. Sets how many copies will be stored.
-		var copies int = 3
-
 		if len(tsl) <= copies {
 			klog.Warningf("There's less than %d images for %s. Skipping rotation.", copies, k)
 			continue
