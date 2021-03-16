@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -22,6 +23,10 @@ func init() {
 }
 
 func main() {
+	lambda.Start(LambdaHandler)
+}
+
+func LambdaHandler() error {
 	ec2svc := ec2.New(session.New(&aws.Config{
 		Region: aws.String(region),
 	}))
@@ -156,4 +161,5 @@ func main() {
 		klog.Infof("Removed %s", image)
 	}
 
+	return nil
 }
