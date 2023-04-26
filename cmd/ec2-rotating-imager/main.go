@@ -73,7 +73,12 @@ func LambdaHandler() error {
 				Name:        aws.String(fmt.Sprintf("%s-%v", *iname, time.Now().Unix())),
 				NoReboot:    aws.Bool(true),
 				TagSpecifications: []*ec2.TagSpecification{&ec2.TagSpecification{
-					Tags:         inst.Tags,
+					Tags: []*ec2.Tag{
+						{
+							Key:   aws.String("Name"),
+							Value: aws.String(*iname),
+						},
+					},
 					ResourceType: aws.String("image"),
 				}},
 			}
